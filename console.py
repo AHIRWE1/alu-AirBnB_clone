@@ -68,7 +68,7 @@ class HBNBCommand(cmd.Cmd):
         if len(args) == 1:
             print("** instance id missing **")
             return
-        key = f"{args[0]}.{args[1]}"
+        key = "{}.{}".format(args[0], args[1])
         obj = storage.all().get(key)
         if not obj:
             print("** no instance found **")
@@ -87,7 +87,7 @@ class HBNBCommand(cmd.Cmd):
         if len(args) == 1:
             print("** instance id missing **")
             return
-        key = f"{args[0]}.{args[1]}"
+        key = "{}.{}".format(args[0], args[1])
         if key not in storage.all():
             print("** no instance found **")
             return
@@ -102,7 +102,8 @@ class HBNBCommand(cmd.Cmd):
         elif arg not in classes:
             print("** class doesn't exist **")
         else:
-            print([str(obj) for obj in objs.values() if type(obj).__name__ == arg])
+            print([str(obj) for obj in objs.values()
+                   if type(obj).__name__ == arg])
 
     def do_update(self, arg):
         """Updates an instance based on the class name and id"""
@@ -110,7 +111,7 @@ class HBNBCommand(cmd.Cmd):
         if args is None:
             return
         class_name, obj_id, attr_name, attr_value = args
-        key = f"{class_name}.{obj_id}"
+        key = "{}.{}".format(class_name, obj_id)
         obj = storage.all().get(key)
         if not obj:
             print("** no instance found **")
