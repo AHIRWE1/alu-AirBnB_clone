@@ -1,55 +1,61 @@
+# AirBnB Clone - The Console
 
-AirBnB Clone - The Console
+The console is the first step of the AirBnB project at ALU/Holberton School. This project introduces fundamental concepts of higher-level programming by creating a simple command interpreter to manage objects for the AirBnB clone web application (HBnB).
 
-The console is the first step of the AirBnB project at ALU/Holberton School. The goal of this project is to build a simple command interpreter that will later be used to manage objects for the AirBnB clone web application.
+## Features
 
-This command interpreter allows us to:
+This command interpreter currently allows you to:
 
-Start an interactive shell session
+- Start an interactive shell session
+- Execute basic commands (`help`, `quit`, `EOF`)
 
-Execute basic commands (help, quit, EOF)
+Future expansions will allow you to:
 
-Extend functionality later to create, update, destroy, and show objects
+- Create new objects (e.g., User, Place)
+- Retrieve objects from storage
+- Update object attributes
+- Delete objects
 
-Table of Contents
+## Table of Contents
 
-Environment
+- Environment
+- Installation
+- Usage
+- Examples
+- Authors
 
-Installation
+## Environment
 
-Usage
+- Language: Python 3 (version 3.8.5)
+- OS: Ubuntu 20.04 LTS
+- Style guide: pycodestyle (version 2.7.*)
 
-Examples
-
-Authors
-
-Environment
-
-Language: Python3 (version 3.8.5)
-
-OS: Ubuntu 20.04 LTS
-
-Style guide: pycodestyle (version 2.7.*)
-
-Installation
+## Installation
 
 Clone this repository:
 
-git clone https://github.com/<your-team-username>/alu-AirBnB_clone.git
-
+```bash
+git clone https://github.com/<your-github-username>/alu-AirBnB_clone.git
+```
 
 Move into the project directory:
 
+```bash
 cd alu-AirBnB_clone
+```
 
+Make the console script executable (Linux/macOS only):
 
-Make sure console.py is executable:
-
+```bash
 chmod +x console.py
+```
 
-Usage
-Interactive Mode
-$ ./console.py
+## Usage
+
+### Interactive Mode
+
+```bash
+./console.py
 (hbnb) help
 
 Documented commands (type help <topic>):
@@ -58,9 +64,12 @@ EOF  help  quit
 
 (hbnb) quit
 $
+```
 
-Non-Interactive Mode
-$ echo "help" | ./console.py
+### Non-Interactive Mode
+
+```bash
+echo "help" | ./console.py
 (hbnb)
 
 Documented commands (type help <topic>):
@@ -68,15 +77,17 @@ Documented commands (type help <topic>):
 EOF  help  quit
 (hbnb)
 $
+```
 
-Examples
+## Examples
+
+```bash
 (hbnb) help quit
 Quit command to exit the program
 (hbnb) quit
 $
+```
 
-Authors
+## Authors
 
 Gabriella Ange Ahirwe
-
-
