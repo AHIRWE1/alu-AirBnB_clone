@@ -33,5 +33,4 @@ class TestConsole(unittest.TestCase):
         self.assertIsNone(result)
 
 
-if __name__ == "__main__":
-    unittest.main()
+unittest.main()
