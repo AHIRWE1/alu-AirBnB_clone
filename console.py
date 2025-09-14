@@ -1,12 +1,8 @@
 #!/usr/bin/python3
 """
-Console for AirBnB clone.
-Handles the command interpreter for creating, updating,
-showing, and deleting objects.
+This module defines the command interpreter for the HBNB project.
 """
-
 import cmd
-from models import storage
 from models.base_model import BaseModel
 from models.user import User
 from models.state import State
@@ -14,156 +10,224 @@ from models.city import City
 from models.amenity import Amenity
 from models.place import Place
 from models.review import Review
-
-classes = {
-    "BaseModel": BaseModel,
-    "User": User,
-    "State": State,
-    "City": City,
-    "Amenity": Amenity,
-    "Place": Place,
-    "Review": Review
-}
+from models import storage
+import json
+import re
 
 
 class HBNBCommand(cmd.Cmd):
-    """Command interpreter for AirBnB clone."""
-
-    prompt = "(hbnb) "
+    """
+    Command interpreter class.
+    """
+    prompt = '(hbnb) '
+    classes = {
+        'BaseModel': BaseModel,
+        'User': User,
+        'State': State,
+        'City': City,
+        'Amenity': Amenity,
+        'Place': Place,
+        'Review': Review
+    }
 
     def do_quit(self, arg):
-        """Quit command to exit the program"""
+        """
+        Quit command to exit the program.
+        """
         return True
 
     def do_EOF(self, arg):
-        """EOF command to exit the program"""
+        """
+        EOF command to exit the program.
+        """
         print()
         return True
 
     def emptyline(self):
-        """Do nothing on empty line"""
+        """
+        Do nothing on an empty line.
+        """
         pass
 
     def do_create(self, arg):
-        """Creates a new instance of BaseModel, saves it, and prints the id"""
+        """
+        Creates a new instance of BaseModel, saves it to a JSON file,
+        and prints the id.
+        """
         if not arg:
             print("** class name missing **")
             return
-        if arg not in classes:
+        if arg not in self.classes:
             print("** class doesn't exist **")
             return
-        obj = classes[arg]()
-        obj.save()
-        print(obj.id)
+        new_instance = self.classes[arg]()
+        new_instance.save()
+        print(new_instance.id)
 
     def do_show(self, arg):
-        """Prints the string representation of an instance"""
+        """
+        Prints the string representation of an instance based on
+        the class name and id.
+        """
         args = arg.split()
-        if len(args) == 0:
+        if not args:
             print("** class name missing **")
             return
-        if args[0] not in classes:
+        if args[0] not in self.classes:
             print("** class doesn't exist **")
             return
-        if len(args) == 1:
+        if len(args) < 2:
             print("** instance id missing **")
             return
         key = "{}.{}".format(args[0], args[1])
-        obj = storage.all().get(key)
-        if not obj:
+        all_objs = storage.all()
+        if key not in all_objs:
             print("** no instance found **")
             return
-        print(obj)
+        print(all_objs[key])
 
     def do_destroy(self, arg):
-        """Deletes an instance based on the class name and id"""
+        """
+        Deletes an instance based on the class name and id.
+        """
         args = arg.split()
-        if len(args) == 0:
+        if not args:
             print("** class name missing **")
             return
-        if args[0] not in classes:
+        if args[0] not in self.classes:
             print("** class doesn't exist **")
             return
-        if len(args) == 1:
+        if len(args) < 2:
             print("** instance id missing **")
             return
         key = "{}.{}".format(args[0], args[1])
-        if key not in storage.all():
+        all_objs = storage.all()
+        if key not in all_objs:
             print("** no instance found **")
             return
-        del storage.all()[key]
+        del all_objs[key]
         storage.save()
 
     def do_all(self, arg):
-        """Prints all string representation of all instances"""
-        objs = storage.all()
+        """
+        Prints all string representations of all instances
+        based or not on the class name.
+        """
+        all_objs = storage.all()
+        obj_list = []
         if not arg:
-            print([str(obj) for obj in objs.values()])
-        elif arg not in classes:
+            for key in all_objs:
+                obj_list.append(str(all_objs[key]))
+        elif arg not in self.classes:
             print("** class doesn't exist **")
+            return
         else:
-            print([str(obj) for obj in objs.values()
-                   if type(obj).__name__ == arg])
+            for key in all_objs:
+                if key.split('.')[0] == arg:
+                    obj_list.append(str(all_objs[key]))
+        print(obj_list)
 
     def do_update(self, arg):
-        """Updates an instance based on the class name and id"""
-        args = self.parse_update_args(arg)
-        if args is None:
+        """
+        Updates an instance based on the class name and id by adding or
+        updating an attribute.
+        """
+        args = arg.split()
+        if not args:
+            print("** class name missing **")
             return
-        class_name, obj_id, attr_name, attr_value = args
-        key = "{}.{}".format(class_name, obj_id)
-        obj = storage.all().get(key)
-        if not obj:
+        if args[0] not in self.classes:
+            print("** class doesn't exist **")
+            return
+        if len(args) < 2:
+            print("** instance id missing **")
+            return
+
+        key = "{}.{}".format(args[0], args[1])
+        all_objs = storage.all()
+
+        if key not in all_objs:
             print("** no instance found **")
             return
-        # Don't update id, created_at, updated_at
-        if attr_name in ["id", "created_at", "updated_at"]:
+
+        if len(args) < 3:
+            print("** attribute name missing **")
             return
-        # Cast value to correct type if possible
-        try:
-            attr_type = type(getattr(obj, attr_name, str(attr_value)))
-            if attr_type is int:
-                attr_value = int(attr_value)
-            elif attr_type is float:
-                attr_value = float(attr_value)
-        except Exception:
-            pass
+
+        if len(args) < 4:
+            print("** value missing **")
+            return
+
+        obj = all_objs[key]
+        attr_name = args[2]
+        attr_value = args[3]
+
+        if attr_value.startswith('"') and attr_value.endswith('"'):
+            attr_value = attr_value[1:-1]
+        
+        # Check if the attribute is a known type and cast it
+        if hasattr(obj, attr_name):
+            try:
+                if isinstance(getattr(obj, attr_name), int):
+                    attr_value = int(attr_value)
+                elif isinstance(getattr(obj, attr_name), float):
+                    attr_value = float(attr_value)
+            except (ValueError, TypeError):
+                pass
+        
         setattr(obj, attr_name, attr_value)
         obj.save()
 
-    def parse_update_args(self, arg):
-        """Helper to parse update arguments and handle errors"""
-        args = []
-        in_quotes = False
-        current = ""
-        for c in arg:
-            if c == '"':
-                in_quotes = not in_quotes
-            elif c == " " and not in_quotes:
-                if current:
-                    args.append(current)
-                    current = ""
+    def default(self, line):
+        """
+        Handles <class name>.method() syntax.
+        """
+        parts = line.split('.', 1)
+        if len(parts) == 2 and parts[0] in self.classes:
+            cls_name = parts[0]
+            method_call = parts[1]
+            if method_call == "all()":
+                self.do_all(cls_name)
+            elif method_call == "count()":
+                count = 0
+                for key in storage.all():
+                    if key.startswith(cls_name):
+                        count += 1
+                print(count)
+            elif method_call.startswith("show("):
+                instance_id = method_call[6:-2]
+                self.do_show(cls_name + " " + instance_id)
+            elif method_call.startswith("destroy("):
+                instance_id = method_call[9:-2]
+                self.do_destroy(cls_name + " " + instance_id)
+            elif method_call.startswith("update("):
+                update_args = method_call[7:-1]
+                
+                # Check for dictionary syntax
+                if '{' in update_args and '}' in update_args:
+                    match = re.match(r'^(.*?)(\s*,\s*)({.*})$', update_args)
+                    if match:
+                        instance_id = match.group(1).strip('"')
+                        dict_str = match.group(3)
+                        try:
+                            update_dict = eval(dict_str)
+                            for key, value in update_dict.items():
+                                self.do_update(
+                                    cls_name + " " + instance_id + " " + key + " " + str(value))
+                        except (SyntaxError, ValueError) as e:
+                            print(e)
+                else:
+                    parts = update_args.split(", ", 2)
+                    instance_id = parts[0].strip('"')
+                    attr_name = parts[1].strip('"')
+                    attr_value = parts[2]
+                    self.do_update(
+                        cls_name + " " + instance_id + " " + attr_name + " " + attr_value)
             else:
-                current += c
-        if current:
-            args.append(current)
-        if len(args) == 0:
-            print("** class name missing **")
-            return None
-        if args[0] not in classes:
-            print("** class doesn't exist **")
-            return None
-        if len(args) == 1:
-            print("** instance id missing **")
-            return None
-        if len(args) == 2:
-            print("** attribute name missing **")
-            return None
-        if len(args) == 3:
-            print("** value missing **")
-            return None
-        return args[:4]
+                print("*** Unknown syntax: {}".format(line))
+        else:
+            print("*** Unknown syntax: {}".format(line))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     HBNBCommand().cmdloop()
